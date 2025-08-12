@@ -71,63 +71,85 @@ async def send_welcome(message: types.Message):
 
 @dp.callback_query(F.data == "about_team")
 async def about_team(callback: types.CallbackQuery):
-    await callback.answer()
-    await callback.message.answer(
-        f"📚 Подробнее о нашей команде:\n{TEAM_ARTICLE_URL}",
-        disable_web_page_preview=True
-    )
+    try:
+        await callback.answer()
+        await callback.message.answer(
+            f"📚 Подробнее о нашей команде:\n{TEAM_ARTICLE_URL}",
+            disable_web_page_preview=True
+        )
+    except Exception as e:
+        logger.error(f"Error in about_team: {e}")
 
 @dp.callback_query(F.data == "join_team")
 async def join_team(callback: types.CallbackQuery):
-    await callback.answer()
-    await callback.message.answer(
-        f"💰 Вступление в тиму Money Montana\n\nДля прохода в тиму необходимо внести залог в размере {DEPOSIT_AMOUNT}\nВыберите способ оплаты:",
-        reply_markup=payment_methods_kb()
-    )
+    try:
+        await callback.answer()
+        await callback.message.answer(
+            f"💰 Вступление в тиму Money Montana\n\nДля прохода в тиму необходимо внести залог в размере {DEPOSIT_AMOUNT}\nВыберите способ оплаты:",
+            reply_markup=payment_methods_kb()
+        )
+    except Exception as e:
+        logger.error(f"Error in join_team: {e}")
 
 @dp.callback_query(F.data == "card_payment")
 async def card_payment(callback: types.CallbackQuery):
-    await callback.answer()
-    await callback.message.answer(
-        "⚠️ Оплата картой временно недоступна",
-        reply_markup=back_kb("back_to_payment")
-    )
+    try:
+        await callback.answer("Оплата картой временно недоступна", show_alert=True)
+        # Альтернатива - отправка нового сообщения
+        # await callback.message.answer("⚠️ Оплата картой временно недоступна")
+    except Exception as e:
+        logger.error(f"Error in card_payment: {e}")
 
 @dp.callback_query(F.data == "usdt_payment")
 async def usdt_payment(callback: types.CallbackQuery):
-    await callback.answer()
-    await callback.message.answer(
-        f"💸 Оплата через USDT:\n\n1. Перейдите по ссылке: {USDT_PAYMENT_LINK}\n2. Оплатите счет\n3. Пришлите скриншот оплаты",
-        reply_markup=back_kb("back_to_payment")
-    )
+    try:
+        await callback.answer()
+        await callback.message.edit_text(
+            f"💸 Оплата через USDT:\n\n1. Перейдите по ссылке: {USDT_PAYMENT_LINK}\n2. Оплатите счет\n3. Пришлите скриншот оплаты",
+            reply_markup=back_kb("back_to_payment")
+        )
+    except Exception as e:
+        logger.error(f"Error in usdt_payment: {e}")
+        # Fallback - отправка нового сообщения
+        await callback.message.answer("Произошла ошибка, попробуйте ещё раз")
 
 @dp.callback_query(F.data == "xmr_payment")
 async def xmr_payment(callback: types.CallbackQuery):
-    await callback.answer()
-    await callback.message.answer(
-        f"🔐 Оплата через Monero:\n\nОтправьте СТРОГО {XMR_AMOUNT} XMR на адрес:\n\n<code>{XMR_ADDRESS}</code>\n\nПосле оплаты пришлите txid транзакции",
-        parse_mode="HTML",
-        reply_markup=back_kb("back_to_payment")
-    )
+    try:
+        await callback.answer()
+        await callback.message.edit_text(
+            f"🔐 Оплата через Monero:\n\nОтправьте СТРОГО {XMR_AMOUNT} XMR на адрес:\n\n<code>{XMR_ADDRESS}</code>\n\nПосле оплаты пришлите txid транзакции",
+            parse_mode="HTML",
+            reply_markup=back_kb("back_to_payment")
+        )
+    except Exception as e:
+        logger.error(f"Error in xmr_payment: {e}")
 
 @dp.callback_query(F.data == "why_deposit")
 async def why_deposit(callback: types.CallbackQuery):
-    await callback.answer()
-    await callback.message.answer(
-        "🔒 Залог нужен для:\n\n• Подтверждения серьезности намерений\n• Защиты сообщества от мошенников\n• Доступа к закрытым материалам\n\nЗалог возвращается при выходе из тимы.",
-        reply_markup=back_kb("back_to_payment")
-    )
+    try:
+        await callback.answer()
+        await callback.message.edit_text(
+            "🔒 Залог нужен для:\n\n• Подтверждения серьезности намерений\n• Защиты сообщества от мошенников\n• Доступа к закрытым материалам\n\nЗалог возвращается при выходе из тимы.",
+            reply_markup=back_kb("back_to_payment")
+        )
+    except Exception as e:
+        logger.error(f"Error in why_deposit: {e}")
 
 @dp.callback_query(F.data.startswith("back_"))
 async def back_handler(callback: types.CallbackQuery):
-    await callback.answer()
-    await callback.message.delete()
-    
-    if callback.data == 'back_to_main':
-        await send_welcome(callback.message)
-    elif callback.data == 'back_to_payment':
-        await join_team(callback)
-
+    try:
+        await callback.answer()
+        if callback.data == 'back_to_main':
+            await callback.message.delete()
+            await send_welcome(callback.message)
+        elif callback.data == 'back_to_payment':
+            await callback.message.edit_text(
+                f"💰 Вступление в тиму Money Montana\n\nДля прохода в тиму необходимо внести залог в размере {DEPOSIT_AMOUNT}\nВыберите способ оплаты:",
+                reply_markup=payment_methods_kb()
+            )
+    except Exception as e:
+        logger.error(f"Error in back_handler: {e}")
 # ===================== WEBHOOK НАСТРОЙКА =====================
 async def on_startup():
     await bot.set_webhook(WEBHOOK_URL)
