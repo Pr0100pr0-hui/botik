@@ -59,13 +59,13 @@ async def send_welcome(message: types.Message):
     try:
         await message.answer_photo(
             types.FSInputFile('image.jpg'),
-            caption="Добро пожаловать в Money Montana!\nВыберите действие:",
+            caption="⭐ Добро пожаловать в Money Montana! ⭐\n\nВыберите действие:",
             reply_markup=main_menu_kb()
         )
     except Exception as e:
         logger.error(f"Error sending photo: {e}")
         await message.answer(
-            "Добро пожаловать в Money Montana!\nВыберите действие:",
+            "⭐ Добро пожаловать в Money Montana! ⭐\n\nВыберите действие:",
             reply_markup=main_menu_kb()
         )
 
@@ -74,7 +74,7 @@ async def about_team(callback: types.CallbackQuery):
     try:
         await callback.answer()
         await callback.message.answer(
-            f"📚 Подробнее о нашей команде:\n{TEAM_ARTICLE_URL}",
+            f"📚 Подробнее о тиме:\n\n{TEAM_ARTICLE_URL}",
             disable_web_page_preview=True
         )
     except Exception as e:
@@ -85,7 +85,7 @@ async def join_team(callback: types.CallbackQuery):
     try:
         await callback.answer()
         await callback.message.answer(
-            f"💰 Вступление в тиму Money Montana\n\nДля прохода в тиму необходимо внести залог в размере {DEPOSIT_AMOUNT}\nВыберите способ оплаты:",
+            f"💰 Вступление в тиму Money Montana 💰\n\nДля прохода в тиму необходимо внести залог в размере {DEPOSIT_AMOUNT}\n\nВыберите способ оплаты:",
             reply_markup=payment_methods_kb()
         )
     except Exception as e:
@@ -94,7 +94,7 @@ async def join_team(callback: types.CallbackQuery):
 @dp.callback_query(F.data == "card_payment")
 async def card_payment(callback: types.CallbackQuery):
     try:
-        await callback.answer("Оплата картой временно недоступна", show_alert=True)
+        await callback.answer("💳 Оплата картой временно недоступна 💳\n\nВыберите другой способ оплаты", show_alert=True)
         # Альтернатива - отправка нового сообщения
         # await callback.message.answer("⚠️ Оплата картой временно недоступна")
     except Exception as e:
@@ -105,7 +105,7 @@ async def usdt_payment(callback: types.CallbackQuery):
     try:
         await callback.answer()
         await callback.message.edit_text(
-            f"💸 Оплата через USDT:\n\n1. Перейдите по ссылке: {USDT_PAYMENT_LINK}\n2. Оплатите счет\n3. Пришлите скриншот оплаты",
+            f"💸 Оплата через USDT 💸\n\nОплатите чек через Cryptobot:\n{USDT_PAYMENT_LINK},
             reply_markup=back_kb("back_to_payment")
         )
     except Exception as e:
@@ -118,7 +118,7 @@ async def xmr_payment(callback: types.CallbackQuery):
     try:
         await callback.answer()
         await callback.message.edit_text(
-            f"🔐 Оплата через Monero:\n\nОтправьте СТРОГО {XMR_AMOUNT} XMR на адрес:\n\n<code>{XMR_ADDRESS}</code>\n\nПосле оплаты пришлите txid транзакции",
+            f"🔐 Оплата через Monero 🔐\n\nОтправьте СТРОГО {XMR_AMOUNT} XMR на адрес:\n\n<code>{XMR_ADDRESS}</code>\n\nПроверка оплаты занимает 10-20 мин",
             parse_mode="HTML",
             reply_markup=back_kb("back_to_payment")
         )
@@ -130,7 +130,7 @@ async def why_deposit(callback: types.CallbackQuery):
     try:
         await callback.answer()
         await callback.message.edit_text(
-            "🔒 Залог нужен для:\n\n• Подтверждения серьезности намерений\n• Защиты сообщества от мошенников\n• Доступа к закрытым материалам\n\nЗалог возвращается при выходе из тимы.",
+            "❕ Залог нужен для: ❕\n\n• Подтверждения серьезности намерений\n• Доступа к закрытым материалам и ресурсам команды\n•Фильтрации случайных людей и недобросовестных участников\n\nЗалог возвращается при выходе из тимы.",
             reply_markup=back_kb("back_to_payment")
         )
     except Exception as e:
@@ -145,7 +145,7 @@ async def back_handler(callback: types.CallbackQuery):
             await send_welcome(callback.message)
         elif callback.data == 'back_to_payment':
             await callback.message.edit_text(
-                f"💰 Вступление в тиму Money Montana\n\nДля прохода в тиму необходимо внести залог в размере {DEPOSIT_AMOUNT}\nВыберите способ оплаты:",
+                f"💰 Вступление в тиму Money Montana 💰\n\nДля прохода в тиму необходимо внести залог в размере {DEPOSIT_AMOUNT}\n\nВыберите способ оплаты:",
                 reply_markup=payment_methods_kb()
             )
     except Exception as e:
