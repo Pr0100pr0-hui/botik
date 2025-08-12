@@ -1,26 +1,26 @@
 import logging
+import os
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiohttp import web
-import os
 
 # Настройка логгирования
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Конфигурация
-BOT_TOKEN = "8264762284:AAFLaxm_3SrgcPYjdCyj1HBj7XuBx1VI4yY"
-PYTHONANYWHERE_USERNAME = 'PenisJopaVazelin'
-WEBHOOK_HOST = f'{PYTHONANYWHERE_USERNAME}.pythonanywhere.com'
+# Конфигурация (значения берутся из переменных окружения Railway)
+BOT_TOKEN = os.environ['BOT_TOKEN']
+PORT = int(os.environ.get('PORT', 8000))  # Railway автоматически назначает порт
+WEBHOOK_HOST = os.environ.get('RAILWAY_STATIC_URL', '')  # Ваш домен на Railway
 WEBHOOK_PATH = '/webhook'
-WEBHOOK_URL = f'https://{WEBHOOK_HOST}{WEBHOOK_PATH}'
+WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
 
-# Платежные реквизиты (замените на свои)
+# Платежные реквизиты (можно вынести в переменные окружения)
 TEAM_ARTICLE_URL = "https://telegra.ph/Your-Team-Article-12-31"
 USDT_PAYMENT_LINK = "https://cryptobot.url/your_usdt_link"
-XMR_ADDRESS = "42ryGdiDRZ1JezVaCqkc8S8yjeo5JTV8xf2eivCqvqgVAeW3EfcXMaJLUZ4nJSm4KT6AwxuWjEeKgQueoXxMm7txCK5hiYi"
+XMR_ADDRESS = "84abc123..."
 XMR_AMOUNT = "0.19638"
 DEPOSIT_AMOUNT = "$49"
 
@@ -50,18 +50,17 @@ def back_kb(target):
         InlineKeyboardButton("Назад", callback_data=target)
     )
 
-# ===================== ОБРАБОТЧИКИ =====================
+# ===================== ОБРАБОТЧИКИ КОМАНД =====================
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
     try:
-        # Попытка отправить фото (если есть)
         await message.answer_photo(
             types.InputFile('image.jpg'),
-            caption=f"Добро пожаловать в Money Montana!\nВыберите действие:",
+            caption="Добро пожаловать в Money Montana!\nВыберите действие:",
             reply_markup=main_menu_kb()
         )
-    except:
-        # Если фото нет - отправляем просто текст
+    except Exception as e:
+        logger.error(f"Error sending photo: {e}")
         await message.answer(
             "Добро пожаловать в Money Montana!\nВыберите действие:",
             reply_markup=main_menu_kb()
@@ -148,16 +147,7 @@ app.router.add_post(WEBHOOK_PATH, handle_webhook)
 app.on_startup.append(on_startup)
 
 def run_app():
-    web.run_app(
-        app,
-        host='0.0.0.0',
-        port=8080  # PythonAnywhere использует порт 8080
-    )
+    web.run_app(app, host='0.0.0.0', port=PORT)
 
 if __name__ == '__main__':
-    # Для локального тестирования без webhook:
-    # from aiogram import executor
-    # executor.start_polling(dp, skip_updates=True)
-    
-    # Для PythonAnywhere:
     run_app()
